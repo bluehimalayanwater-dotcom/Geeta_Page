@@ -1,0 +1,7 @@
+{
+  "name": "Dharmic Wisdom Explainer",
+  "description": "A real-time AI spiritual guide explaining the Bhagwat Geeta and Ramayan using wise modulated voices.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
