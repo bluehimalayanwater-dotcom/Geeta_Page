@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { VoicePersona } from '../types';
+import { VoicePersona } from '../types.ts';
 
 interface PersonaCardProps {
   persona: VoicePersona;

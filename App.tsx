@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
-import { PERSONAS, AUDIO_SAMPLE_RATE_INPUT, AUDIO_SAMPLE_RATE_OUTPUT } from './constants';
-import { VoicePersona, TranscriptionEntry } from './types';
-import { createPcmBlob, decode, decodeAudioData } from './services/audioUtils';
-import PersonaCard from './components/PersonaCard';
-import AudioVisualizer from './components/AudioVisualizer';
+import { PERSONAS, AUDIO_SAMPLE_RATE_INPUT, AUDIO_SAMPLE_RATE_OUTPUT } from './constants.ts';
+import { VoicePersona, TranscriptionEntry } from './types.ts';
+import { createPcmBlob, decode, decodeAudioData } from './services/audioUtils.ts';
+import PersonaCard from './components/PersonaCard.tsx';
+import AudioVisualizer from './components/AudioVisualizer.tsx';
 
 const App: React.FC = () => {
   // UI State
@@ -14,6 +14,7 @@ const App: React.FC = () => {
   const [transcriptions, setTranscriptions] = useState<TranscriptionEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
 
   // Audio Processing Refs
   const audioContextInRef = useRef<AudioContext | null>(null);
@@ -198,6 +199,18 @@ const App: React.FC = () => {
     }
   };
 
+  const handleShare = () => {
+    const text = "Exploring the wisdom of Bhagwat Geeta & Ramayan with this Real-time AI Guide. 🕉️✨";
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({ title: 'Dharmic Wisdom Explainer', text, url });
+    } else {
+      navigator.clipboard.writeText(`${text} ${url}`);
+      setShareSuccess(true);
+      setTimeout(() => setShareSuccess(false), 2000);
+    }
+  };
+
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -208,7 +221,7 @@ const App: React.FC = () => {
       {/* Header */}
       <header className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-amber-600/20 border border-amber-500/40 flex items-center justify-center text-3xl">🕉️</div>
+          <div className="w-16 h-16 rounded-full bg-amber-600/20 border border-amber-500/40 flex items-center justify-center text-3xl shadow-inner">🕉️</div>
           <div>
             <h1 className="text-4xl font-spiritual font-black saffron-gradient tracking-tight">
               DHARMIC WISDOM
@@ -216,17 +229,26 @@ const App: React.FC = () => {
             <p className="text-stone-500 font-mono text-xs tracking-widest uppercase">Geeta & Ramayan Real-time Guide</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 glass px-4 py-2 rounded-full border border-amber-500/20">
-          <div className={`w-3 h-3 rounded-full ${isLive ? 'bg-orange-500 animate-pulse' : 'bg-stone-700'}`}></div>
-          <span className="text-xs font-bold uppercase tracking-widest text-stone-400">
-            {isLive ? 'Divine Aura Active' : 'Seeking Enlightenment'}
-          </span>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={handleShare}
+            className="flex items-center gap-2 px-4 py-2 rounded-full glass border border-amber-500/20 text-xs font-bold text-amber-500 hover:bg-amber-500/10 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+            {shareSuccess ? 'LINK COPIED' : 'SHARE SATSANG'}
+          </button>
+          <div className="flex items-center gap-3 glass px-4 py-2 rounded-full border border-amber-500/20">
+            <div className={`w-3 h-3 rounded-full ${isLive ? 'bg-orange-500 animate-pulse' : 'bg-stone-700'}`}></div>
+            <span className="text-xs font-bold uppercase tracking-widest text-stone-400">
+              {isLive ? 'Divine Aura Active' : 'Seeking Enlightenment'}
+            </span>
+          </div>
         </div>
       </header>
 
       {/* Error Message */}
       {error && (
-        <div className="w-full bg-orange-900/20 border border-orange-500/50 p-4 rounded-xl text-orange-200 text-sm flex items-center gap-3">
+        <div className="w-full bg-orange-900/20 border border-orange-500/50 p-4 rounded-xl text-orange-200 text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
           <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
           {error}
         </div>
@@ -289,7 +311,7 @@ const App: React.FC = () => {
             <div className="flex-1 overflow-y-auto pr-2 space-y-6 scrollbar-thin scrollbar-thumb-amber-600/30">
               {transcriptions.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center text-stone-600 text-center px-8">
-                  <div className="w-20 h-20 rounded-full bg-amber-600/5 border border-amber-600/20 flex items-center justify-center mb-6">
+                  <div className="w-20 h-20 rounded-full bg-amber-600/5 border border-amber-600/20 flex items-center justify-center mb-6 shadow-inner">
                     <svg className="w-10 h-10 text-amber-600/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                   </div>
                   <p className="font-spiritual text-amber-200/50 text-lg mb-2">Silence is the first step to wisdom</p>
@@ -297,7 +319,7 @@ const App: React.FC = () => {
                 </div>
               )}
               {transcriptions.map((t, i) => (
-                <div key={i} className={`flex ${t.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div key={i} className={`flex ${t.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2`}>
                   <div className={`max-w-[85%] p-5 rounded-3xl ${
                     t.role === 'user' 
                       ? 'bg-amber-900/30 text-amber-100 rounded-tr-none border border-amber-700/30' 
@@ -320,7 +342,7 @@ const App: React.FC = () => {
               {!isLive ? (
                 <button
                   onClick={startSession}
-                  className="px-10 py-5 bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-full font-spiritual font-bold text-lg flex items-center gap-3 transition-all animate-pulse-gold shadow-2xl shadow-orange-900/40"
+                  className="px-10 py-5 bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-full font-spiritual font-bold text-lg flex items-center gap-3 transition-all animate-pulse-gold shadow-2xl shadow-orange-900/40 transform active:scale-95"
                 >
                   <span className="text-2xl">🕉️</span>
                   INVOKE WISDOM
@@ -358,6 +380,10 @@ const App: React.FC = () => {
       <footer className="w-full text-center py-10 text-stone-600 font-mono text-[10px] uppercase tracking-[0.3em] flex flex-col gap-3 items-center">
         <div className="flex items-center gap-4 text-amber-900/20 text-xl font-spiritual select-none">
           <span>ॐ</span> <span>शान्ति:</span> <span>शान्ति:</span> <span>शान्ति:</span>
+        </div>
+        <div className="flex items-center gap-6 mb-2">
+           <a href="https://github.com/adeshbhumihar" target="_blank" rel="noopener noreferrer" className="text-stone-700 hover:text-amber-600 transition-colors uppercase tracking-widest text-[9px] border-b border-transparent hover:border-amber-600">Documentation</a>
+           <a href="#" className="text-stone-700 hover:text-amber-600 transition-colors uppercase tracking-widest text-[9px] border-b border-transparent hover:border-amber-600">Privacy Policy</a>
         </div>
         <span>Dharmic Neural Resonance v2.1.0 // Powered by Gemini Live</span>
         <span className="text-amber-600/40 font-bold border-t border-amber-900/10 pt-4 px-10">Made by Adesh Bhumihar</span>

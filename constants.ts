@@ -1,5 +1,5 @@
 
-import { VoicePersona } from './types';
+import { VoicePersona } from './types.ts';
 
 export const PERSONAS: VoicePersona[] = [
   {
